@@ -539,7 +539,7 @@ function mostrarApp(){
   $("#b-cuenta .tx").textContent = S.perfil.usuario;
   $("#b-cuenta").title = `${S.perfil.usuario} · ${ROLES[S.perfil.rol]||""}`;
   document.title = (S.neg ? S.neg.nombre+" · " : "") + "MarketLive";
-  $("#b-usuarios").hidden = !esAdmin();
+  $("#b-usuarios").hidden = !esSuper();
   $("#b-ajustes").hidden = !esAdmin() || !S.neg;
   $("#b-nuevo").disabled = !S.neg;
   banner(S.neg ? "" : "Tu usuario no tiene una tienda activa. Usa “Usuarios” para administrar negocios y accesos.");
@@ -1082,18 +1082,19 @@ function modalCuenta(){
       <div class="fact"><span>Tienda</span><b>${esc(S.neg?S.neg.nombre:"—")}</b></div>
     </div>
     <form id="f-pw" novalidate style="display:flex;flex-direction:column;gap:12px">
-      <h3>Cambiar mi clave</h3>
+      ${esSuper()?`<h3>Cambiar mi clave</h3>
       <div class="grid2">
         <div class="field"><label for="p-1">Clave nueva</label><input id="p-1" type="password" autocomplete="new-password"></div>
         <div class="field"><label for="p-2">Repite la clave nueva</label><input id="p-2" type="password" autocomplete="new-password"></div>
-      </div>
+      </div>`:`<p class="hint">Si necesitas cambiar tu clave o crear más usuarios, pídeselo al administrador de MarketLive.</p>`}
       <p class="err" id="p-err"></p>
       <div class="actions"><span class="spacer"><button class="btn danger" type="button" id="p-salir">Cerrar sesión</button></span>
-        <button class="btn" type="button" data-close>Cerrar</button><button class="btn primary" type="submit">Guardar clave</button></div>
+        <button class="btn" type="button" data-close>Cerrar</button>${esSuper()?`<button class="btn primary" type="submit">Guardar clave</button>`:""}</div>
     </form>`);
   ov.querySelector("#p-salir").addEventListener("click", ()=>salir("Cerraste sesión."));
   ov.querySelector("#f-pw").addEventListener("submit", async e=>{
     e.preventDefault();
+    if(!esSuper()) return;
     const a=ov.querySelector("#p-1").value, b=ov.querySelector("#p-2").value, err=ov.querySelector("#p-err");
     if(a.length<6){ err.textContent="La clave debe tener al menos 6 caracteres."; return; }
     if(a!==b){ err.textContent="Las dos claves no coinciden."; return; }
@@ -1106,7 +1107,7 @@ function modalCuenta(){
 /* =========== Usuarios y negocios (administración) =========== */
 function modalUsuarios(){
   const ov=abrirModal(`<h2>Usuarios${esSuper()?" y negocios":""}</h2><div class="adm" id="adm"><p class="hint">Cargando…</p></div>`, true);
-  const A={ clave:null, del:null, cred:null, err:"" };
+  const A={ clave:null, del:null, mover:null, cred:null, err:"" };
   const box=ov.querySelector("#adm");
   let negs=[], perfs=[];
   const pintar = async (recargar=true) => {
@@ -1143,9 +1144,11 @@ function modalUsuarios(){
           <td><span class="pill ${p.activo?"frecuente":"nuevo"}">${p.activo?"Activo":"Desactivado"}</span></td>
           <td class="act">${yo?`<span class="hint">Tú</span>`: !puede?"": A.clave===p.user_id
             ? `<input id="nc-${p.user_id}" type="text" placeholder="Nueva clave" style="width:140px"> <button class="btn sm primary" type="button" data-a="claveOk" data-id="${p.user_id}" data-u="${esc(p.usuario)}">Guardar</button> <button class="btn sm ghost" type="button" data-a="cancel">✕</button>`
+            : A.mover===p.user_id
+            ? `<select id="mv-${p.user_id}" style="width:170px">${negs.map(n=>`<option value="${n.id}" ${n.id===p.negocio_id?"selected":""}>${esc(n.nombre)}</option>`).join("")}</select> <button class="btn sm primary" type="button" data-a="moverOk" data-id="${p.user_id}">Guardar</button> <button class="btn sm ghost" type="button" data-a="cancel">✕</button>`
             : A.del===p.user_id
             ? `<button class="btn sm danger" type="button" data-a="delSi" data-id="${p.user_id}">Sí, eliminar</button> <button class="btn sm ghost" type="button" data-a="cancel">No</button>`
-            : `<button class="btn sm" type="button" data-a="clave" data-id="${p.user_id}">Cambiar clave</button><button class="btn sm" type="button" data-a="userToggle" data-id="${p.user_id}" data-v="${!p.activo}">${p.activo?"Desactivar":"Activar"}</button><button class="btn sm ghost" type="button" data-a="del" data-id="${p.user_id}">Eliminar</button>`}</td></tr>`; }).join("")}
+            : `${sup?`<button class="btn sm" type="button" data-a="mover" data-id="${p.user_id}">Cambiar tienda</button>`:""}<button class="btn sm" type="button" data-a="clave" data-id="${p.user_id}">Cambiar clave</button><button class="btn sm" type="button" data-a="userToggle" data-id="${p.user_id}" data-v="${!p.activo}">${p.activo?"Desactivar":"Activar"}</button><button class="btn sm ghost" type="button" data-a="del" data-id="${p.user_id}">Eliminar</button>`}</td></tr>`; }).join("")}
         </tbody></table></div>
       </section>
       <section>
@@ -1158,7 +1161,7 @@ function modalUsuarios(){
           <div class="field"><label for="u-rol">Acceso</label><select id="u-rol"><option value="admin">Dueño(a) del negocio</option><option value="vendedor">Vendedor(a)</option></select></div>`:""}
           <button class="btn primary" type="submit">Crear usuario</button>
         </form>
-        <p class="hint">${sup?"El <b>dueño(a)</b> puede editar los datos de su tienda y crear vendedores. El <b>vendedor(a)</b> solo registra clientes y compras.":"Los usuarios que crees aquí son vendedores de tu tienda: registran clientes y compras."}</p>
+        <p class="hint">${sup?"El <b>dueño(a)</b> puede editar el logo y los datos de su tienda. El <b>vendedor(a)</b> solo registra clientes y compras. Solo tú creas usuarios y cambias claves.":"Los usuarios que crees aquí son vendedores de tu tienda: registran clientes y compras."}</p>
       </section>
       <p class="err" id="adm-err">${esc(A.err)}</p>`;
     A.err="";
@@ -1168,13 +1171,15 @@ function modalUsuarios(){
     const b=e.target.closest("[data-a]"); if(!b) return;
     const a=b.dataset.a, id=b.dataset.id;
     try{
-      if(a==="cancel"){ A.clave=null; A.del=null; return pintar(false); }
+      if(a==="cancel"){ A.clave=null; A.del=null; A.mover=null; return pintar(false); }
+      if(a==="mover"){ A.mover=id; A.clave=null; A.del=null; return pintar(false); }
       if(a==="clave"){ A.clave=id; A.del=null; await pintar(false); const i=box.querySelector("#nc-"+id); if(i) i.focus(); return; }
       if(a==="del"){ A.del=id; A.clave=null; return pintar(false); }
       if(a==="negEdit"){ const n=negs.find(n=>n.id===id); if(n){ cerrarModal(); modalNegocio(n, true); } return; }
       if(a==="copyCred"){ try{ await navigator.clipboard.writeText(A.cred); toast("Copiado ✓"); }catch{ toast("Selecciona el texto y cópialo."); } return; }
       b.disabled=true;
       if(a==="claveOk"){ const v=box.querySelector("#nc-"+id).value.trim(); await rpc("admin_cambiar_clave",{ p_user:id, p_clave:v }); A.clave=null; A.cred=`Nueva clave para ${b.dataset.u}\nUsuario: ${b.dataset.u}\nClave: ${v}`; toast("Clave cambiada ✓"); }
+      if(a==="moverOk"){ await rpc("admin_asignar_negocio",{ p_user:id, p_negocio:box.querySelector("#mv-"+id).value }); A.mover=null; toast("Usuario movido de tienda ✓"); }
       if(a==="userToggle"){ await rpc("admin_activar_usuario",{ p_user:id, p_activo:b.dataset.v==="true" }); }
       if(a==="delSi"){ await rpc("admin_eliminar_usuario",{ p_user:id }); A.del=null; toast("Usuario eliminado"); }
       if(a==="negToggle"){ await rpc("admin_activar_negocio",{ p_negocio:id, p_activo:b.dataset.v==="true" }); }
