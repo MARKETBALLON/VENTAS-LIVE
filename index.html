@@ -353,6 +353,41 @@ input[type=search]{-webkit-appearance:none}
 #app .pie{display:none}
 .top{padding-block:12px 14px}
 @media (max-width:400px){ .ml-sub{display:none} }
+
+/* ---- Inventario y cuadros tipo × talla ---- */
+#inv{display:flex;flex-direction:column;gap:16px}
+.inv-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.inv-form{background:var(--sunk);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.mtx{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mtx th,.mtx td{padding:8px 10px;border-top:1px solid var(--line);text-align:center}
+.mtx thead th{background:var(--sunk);font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-top:0}
+.mtx tbody th{text-align:left;font-weight:600;white-space:nowrap}
+.mtx tfoot th,.mtx tfoot td{background:var(--sunk);font-weight:700}
+.mtx tfoot th{text-align:left}
+.mtx .tot{font-weight:700}
+.mtx td.neg{background:var(--danger-soft);color:var(--danger);font-weight:700}
+.mtx td.cero{color:var(--danger)}
+.mtx td.bajo{background:var(--amber-soft);color:var(--amber);font-weight:700}
+.mtx td.si{background:var(--teal-soft);color:var(--teal);font-weight:700}
+.resumen{margin-bottom:12px}
+.qty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+.qty{display:flex;flex-direction:column;gap:4px;align-items:stretch;text-align:center;font-family:var(--f-mono);font-weight:700;font-size:14px;color:var(--fg)}
+.qty input{text-align:center}
+.opt .stk{margin-left:6px;font-size:11px;font-family:var(--f-mono);background:var(--teal-soft);color:var(--teal);border-radius:6px;padding:1px 5px}
+.opt .stk.cero{background:var(--danger-soft);color:var(--danger)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px 4px 3px 9px;font-size:13px;font-weight:600}
+.tag button{border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;padding:0 4px;border-radius:5px}
+.tag button:hover{background:var(--danger-soft);color:var(--danger)}
+.tag-add{display:flex;gap:6px;margin-top:6px}
+.dir-real{max-width:460px}
+.dir-real .lugar{color:var(--teal)}
+.mtx td.vacio{color:var(--muted)}
+.mtx td.ok{color:var(--teal);font-weight:700}
+.top .brand{flex:1 1 220px;min-width:0}
+.top .brand>div{min-width:0}
+.top .brand h1,.top .brand .who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.field .seg{align-self:flex-start}
 </style>
 </head>
 <body>
@@ -389,6 +424,7 @@ input[type=search]{-webkit-appearance:none}
     </div>
     <button class="btn icon-btn" id="b-refresh" type="button" title="Actualizar datos" aria-label="Actualizar datos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
     <button class="btn" id="b-excel" type="button" title="Descargar toda la base en Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span class="tx">Excel</span></button>
+    <button class="btn" id="b-inv" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span class="tx">Inventario</span></button>
     <button class="btn" id="b-usuarios" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span class="tx">Usuarios</span></button>
     <button class="btn" id="b-ajustes" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg><span class="tx">Mi tienda</span></button>
     <button class="btn user-chip" id="b-cuenta" type="button" title="Mi cuenta"><span class="u-av" id="u-av"></span><span class="u-txt"><b id="u-nom"></b><small id="u-rol"></small></span></button>
@@ -455,15 +491,15 @@ const APP_NOMBRE = "MarketLive 🛍️";
 const APP_FRASE = "Tus clientes, pedidos y envíos en un solo lugar";
 /* =============================================================== */
 
-const PRENDAS = ["Polo manga larga","Polo manga corta","Vestido","Short","Pantalón","Falda"];
-const TALLAS = ["S","M","L","XL","XXL","XXXL"];
+const DEF_PRENDAS = ["VESTIDOS","ENTERIZOS","SHORTS","PANTALONES","BLUSAS","POLOS M. LARGA","POLOS M. CORTA"];
+const DEF_TALLAS = ["XS","S","M","L","XL"];
 const PAGOS = ["Yape","Plin","Transferencia","Efectivo","Contra entrega"];
 const AGENCIAS = ["Shalom","Olva Courier","Marvisur","Flores","Otra"];
 const DEPAS = ["Amazonas","Áncash","Apurímac","Arequipa","Ayacucho","Cajamarca","Callao","Cusco","Huancavelica","Huánuco","Ica","Junín","La Libertad","Lambayeque","Lima","Loreto","Madre de Dios","Moquegua","Pasco","Piura","Puno","San Martín","Tacna","Tumbes","Ucayali"];
 const ROLES = { superadmin:"Administrador general", admin:"Dueño(a) del negocio", vendedor:"Vendedor(a)" };
 const XLSXJS = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 
-const S = { sb:null, user:null, perfil:null, neg:null, ready:false, clientes:[], sel:null, filtro:"todas", q:"",
+const S = { sb:null, user:null, perfil:null, neg:null, ready:false, clientes:[], ingresos:[], sinInventario:false, sel:null, filtro:"todas", q:"",
   cf:null, delCompra:null, delDir:null };
 
 const $ = s => document.querySelector(s);
@@ -501,12 +537,53 @@ function errMsg(e){
   if(c==="P0001") return m;
   if(c==="42501" || c==="PGRST116") return "No tienes permiso para este cambio, o el acceso de tu tienda está suspendido.";
   if(/JWT|session/i.test(m)) return "Tu sesión venció. Cierra sesión y vuelve a entrar.";
+  if(/domicilio|prendas|tallas|ingresos/.test(m) && /column|schema|relation|exist/i.test(m)) return "Falta ejecutar en Supabase el archivo 4-direcciones-prendas-inventario.sql.";
   return "No se pudo completar: " + m;
 }
 function loadScript(src){ return new Promise((ok,ko)=>{ if(loadScript[src]) return ok(); const s=document.createElement("script"); s.src=src; s.onload=()=>{loadScript[src]=1;ok()}; s.onerror=()=>ko(new Error("load")); document.head.appendChild(s); }); }
 const prep = c => { c._s=norm(`${c.nombres} ${c.apellidos} ${c.dni} ${c.tel1} ${c.tel2} ${(c.tel1||"").replace(/\D/g,"")}`); c.compras=c.compras||[]; return c; };
 const ordenar = () => S.clientes.sort((a,b)=>String(b.actualizado||"").localeCompare(String(a.actualizado||"")));
 const cli = id => S.clientes.find(c=>c.id===id);
+const listaNeg = (k, def) => (S.neg && Array.isArray(S.neg[k]) && S.neg[k].length) ? S.neg[k] : def;
+const PRENDAS_T = () => listaNeg("prendas", DEF_PRENDAS);
+const TALLAS_T = () => listaNeg("tallas", DEF_TALLAS);
+const unir = (base, extra) => [...base, ...[...extra].filter(x=>!base.includes(x))];
+const kk = (p,t) => p + "\u0001" + t;
+function movimientos(desde){
+  const ing={}, ven={};
+  S.ingresos.forEach(i=>{ if(desde && i.fecha<desde) return; const k=kk(i.prenda,i.talla); ing[k]=(ing[k]||0)+(+i.cantidad||0); });
+  S.clientes.forEach(c=>(c.compras||[]).forEach(x=>{ if(desde && x.fecha<desde) return;
+    (x.items||[]).forEach(i=>{ const k=kk(i.prenda,i.talla); ven[k]=(ven[k]||0)+(+i.cant||0); }); }));
+  return { ing, ven };
+}
+function matriz(prendas, tallas, val, cls, ceros){
+  const tot={}; let gran=0;
+  const cel = v => v===0 ? (ceros?"0":"·") : v;
+  const filas = prendas.map(p=>{ let tp=0;
+    const tds = tallas.map(t=>{ const v=val(p,t)||0; tp+=v; tot[t]=(tot[t]||0)+v; return `<td class="${cls?cls(v):""}">${cel(v)}</td>`; }).join("");
+    gran+=tp; return `<tr><th>${esc(p)}</th>${tds}<td class="tot">${cel(tp)}</td></tr>`; }).join("");
+  return `<div class="tbl-wrap"><table class="mtx"><thead><tr><th>Tipo de prenda</th>${tallas.map(t=>`<th>${esc(t)}</th>`).join("")}<th>Total</th></tr></thead>
+    <tbody>${filas}</tbody><tfoot><tr><th>Total</th>${tallas.map(t=>`<td>${cel(tot[t]||0)}</td>`).join("")}<td class="tot">${cel(gran)}</td></tr></tfoot></table></div>`;
+}
+function tallasBtns(f){
+  const inv = S.ingresos.length>0 && f.prenda, m = inv ? movimientos("") : null;
+  return TALLAS_T().map(t=>{ let extra="";
+    if(m){ const n=(m.ing[kk(f.prenda,t)]||0)-(m.ven[kk(f.prenda,t)]||0); extra=`<small class="stk ${n<=0?"cero":""}" title="Disponible en inventario">${n}</small>`; }
+    return `<button type="button" class="opt talla" data-act="talla" data-v="${esc(t)}" aria-pressed="${f.talla===t}">${esc(t)}${extra}</button>`; }).join("");
+}
+const realVacia = d => !d || (!d.direccion && !d.distrito);
+function camposReal(d={}){
+  return `
+    <div class="grid3">
+      <div class="field"><label for="r-depa">Departamento</label><select id="r-depa"><option value="">—</option>${DEPAS.map(x=>`<option ${(d.departamento||"Lima")===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div class="field"><label for="r-prov">Provincia</label><input id="r-prov" type="text" value="${esc(d.provincia||"")}" placeholder="Ej. Lima"></div>
+      <div class="field"><label for="r-dist">Distrito</label><input id="r-dist" type="text" value="${esc(d.distrito||"")}" placeholder="Ej. Comas"></div>
+    </div>
+    <div class="field"><label for="r-dir">Dirección</label><input id="r-dir" type="text" value="${esc(d.direccion||"")}" placeholder="Av./Jr./Calle, número, Mz, Lt, urbanización"></div>
+    <div class="field"><label for="r-ref">Referencia (opcional)</label><input id="r-ref" type="text" value="${esc(d.referencia||"")}" placeholder="Ej. a una cuadra del colegio"></div>`;
+}
+function leerReal(ov){ const v=s=>((ov.querySelector(s)||{}).value||"").trim();
+  return { departamento:v("#r-depa"), provincia:v("#r-prov"), distrito:v("#r-dist"), direccion:v("#r-dir"), referencia:v("#r-ref") }; }
 const logoOk = s => typeof s==="string" && /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s);
 const HANGER = `<img class="app-logo" src="data:image/jpeg;base64,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" alt="MarketLive">`;
 const baseURL = () => location.origin + location.pathname;
@@ -570,7 +647,7 @@ async function entrar(user){
 }
 async function salir(msg){
   try{ await S.sb.auth.signOut(); }catch{}
-  Object.assign(S,{ user:null, perfil:null, neg:null, ready:false, clientes:[], sel:null, cf:null });
+  Object.assign(S,{ user:null, perfil:null, neg:null, ready:false, clientes:[], ingresos:[], sel:null, cf:null });
   cerrarModal(); mostrarLogin(msg);
 }
 function mostrarApp(){
@@ -585,6 +662,7 @@ function mostrarApp(){
   document.title = (S.neg ? S.neg.nombre+" · " : "") + "MarketLive";
   $("#b-usuarios").hidden = !esSuper();
   $("#b-ajustes").hidden = !esAdmin() || !S.neg;
+  $("#b-inv").hidden = !S.neg;
   $("#b-nuevo").disabled = !S.neg;
   banner(S.neg ? "" : "Tu usuario no tiene una tienda activa. Usa “Usuarios” para administrar negocios y accesos.");
 }
@@ -602,7 +680,8 @@ async function todo(tabla){
 async function cargar(){
   S.ready=false; renderList();
   try{
-    const [cs, comps] = await Promise.all([todo("clientes"), todo("compras")]);
+    const [cs, comps, ings] = await Promise.all([todo("clientes"), todo("compras"), todo("ingresos").catch(()=>null)]);
+    S.ingresos = ings || []; S.sinInventario = ings===null;
     const by={}; comps.forEach(x=>{ (by[x.cliente_id] = by[x.cliente_id] || []).push(x); });
     S.clientes = cs.map(c=>prep({ ...c, compras: by[c.id]||[] }));
     ordenar();
@@ -690,8 +769,11 @@ function renderDetail(conForm){
     </div>
     ${c.notas?`<p class="hint" style="margin-top:10px">Nota: ${esc(c.notas)}</p>`:""}`;
 
-  const dirs=c.direcciones||[];
+  const dirs=c.direcciones||[], dom=c.domicilio||{};
   $("#d-dirs").innerHTML = `
+    <div class="sec-h"><h3>Dirección real</h3><button class="btn sm" type="button" data-act="editCli">Editar</button></div>
+    ${realVacia(dom)?`<p class="hint" style="margin:0 0 18px">Sin dirección real registrada. Pulsa <b>Editar</b> para agregarla.</p>`:`<div class="dir dir-real" style="margin-bottom:18px">
+      <span class="lugar">Donde vive</span><p>${esc(dom.direccion||"")}</p><small>${esc(ubic(dom))}</small>${dom.referencia?`<small>Ref: ${esc(dom.referencia)}</small>`:""}</div>`}
     <div class="sec-h"><h3>Direcciones de envío</h3><button class="btn sm" type="button" data-act="addDir">+ Agregar dirección</button></div>
     ${dirs.length?`<div class="dirs">${dirs.map(d=>`
       <div class="dir">
@@ -718,9 +800,9 @@ function renderCompraForm(c){
     <div class="sec-h"><h3>Registrar nueva compra</h3></div>
     <div class="compra">
       <span class="lbl">Prenda</span>
-      <div class="opts" id="o-prenda">${PRENDAS.map(p=>`<button type="button" class="opt" data-act="prenda" data-v="${p}" aria-pressed="${f.prenda===p}">${p}</button>`).join("")}</div>
-      <span class="lbl">Talla</span>
-      <div class="opts" id="o-talla">${TALLAS.map(t=>`<button type="button" class="opt talla" data-act="talla" data-v="${t}" aria-pressed="${f.talla===t}">${t}</button>`).join("")}</div>
+      <div class="opts" id="o-prenda">${PRENDAS_T().map(p=>`<button type="button" class="opt" data-act="prenda" data-v="${esc(p)}" aria-pressed="${f.prenda===p}">${esc(p)}</button>`).join("")}</div>
+      <span class="lbl">Talla${S.ingresos.length?` <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:500">· el número es lo disponible en inventario</span>`:""}</span>
+      <div class="opts" id="o-talla">${tallasBtns(f)}</div>
       <div class="line-inputs">
         <div class="field"><span>Cantidad</span>
           <div class="stepper"><button type="button" data-act="menos" aria-label="Menos">−</button><input id="cf-cant" type="number" min="1" value="${f.cant}" aria-label="Cantidad"><button type="button" data-act="mas" aria-label="Más">+</button></div></div>
@@ -767,6 +849,9 @@ function renderHist(c){
   $("#d-hist").innerHTML = `
     <div class="sec-h"><h3>Historial de compras</h3><span class="hint" style="margin:0">${cs.length} compra${cs.length===1?"":"s"}</span></div>
     ${tt?`<div class="prefs"><span class="pref">Talla habitual: <b>${esc(tt[0])}</b></span><span class="pref">Lo que más compra: <b>${esc(tp[0])}</b></span><span class="pref">Última compra: <b>${fFecha(cs[0].fecha)}</b></span></div>`:""}
+    ${cs.length?(()=>{ const mat={}; cs.forEach(x=>(x.items||[]).forEach(i=>{ const r=(mat[i.prenda]=mat[i.prenda]||{}); r[i.talla]=(r[i.talla]||0)+(+i.cant||0); }));
+      const P=unir(PRENDAS_T(), Object.keys(mat)).filter(p=>mat[p]); const T=unir(TALLAS_T(), new Set(Object.values(mat).flatMap(o=>Object.keys(o)))).filter(t=>P.some(p=>mat[p][t]));
+      return `<div class="resumen"><span class="lbl">Lo que ha comprado por tipo y talla</span>${matriz(P,T,(p,t)=>(mat[p]||{})[t]||0, v=>v?"si":"")}</div>`; })():""}
     ${cs.length?`<div class="hist">${cs.map(x=>`
       <div class="h-item">
         <div class="h-date">${fFecha(x.fecha)}</div>
@@ -790,7 +875,11 @@ function agregarItem(){
   const f=S.cf, err=$("#cf-err"); err.textContent="";
   if(!f.prenda){ err.textContent="Elige el tipo de prenda."; return false; }
   if(!f.talla){ err.textContent="Elige la talla."; return false; }
-  f.items.push({ prenda:f.prenda, talla:f.talla, cant:Math.max(1,parseInt(f.cant)||1), precio:Math.max(0,parseFloat(f.precio)||0), color:f.color.trim() });
+  const item={ prenda:f.prenda, talla:f.talla, cant:Math.max(1,parseInt(f.cant)||1), precio:Math.max(0,parseFloat(f.precio)||0), color:f.color.trim() };
+  if(S.ingresos.length){ const m=movimientos(""); const enCarro=f.items.filter(i=>i.prenda===item.prenda&&i.talla===item.talla).reduce((a,i)=>a+i.cant,0);
+    const disp=(m.ing[kk(item.prenda,item.talla)]||0)-(m.ven[kk(item.prenda,item.talla)]||0)-enCarro;
+    if(disp<item.cant) toast(`Ojo: en inventario quedan ${Math.max(0,disp)} de ${item.prenda} talla ${item.talla}.`); }
+  f.items.push(item);
   f.prenda=null; f.talla=null; f.cant=1; f.color="";
   document.querySelectorAll("#o-prenda .opt,#o-talla .opt").forEach(b=>b.setAttribute("aria-pressed","false"));
   $("#cf-cant").value=1; $("#cf-color").value="";
@@ -822,7 +911,7 @@ $("#detail").addEventListener("click", async e=>{
   const f=S.cf;
   try{
     if(a==="volver"){ S.sel=null; $("#main").classList.remove("show-detail"); renderList(); renderDetail(); return; }
-    if(a==="prenda"||a==="talla"){ f[a]=b.dataset.v; b.parentElement.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed", x===b)); return; }
+    if(a==="prenda"||a==="talla"){ f[a]=b.dataset.v; b.parentElement.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed", x===b)); if(a==="prenda") $("#o-talla").innerHTML=tallasBtns(f); return; }
     if(a==="menos"||a==="mas"){ f.cant=Math.max(1,(parseInt(f.cant)||1)+(a==="mas"?1:-1)); $("#cf-cant").value=f.cant; return; }
     if(a==="addItem"){ agregarItem(); return; }
     if(a==="rmItem"){ f.items.splice(+b.dataset.i,1); renderCart(); return; }
@@ -952,7 +1041,11 @@ function modalCliente(c){
         <div class="field"><label for="c-tel1">Celular / WhatsApp</label><input id="c-tel1" type="tel" class="mono" value="${esc(c.tel1)}" autocomplete="off"></div>
         <div class="field"><label for="c-tel2">Otro celular (opcional)</label><input id="c-tel2" type="tel" class="mono" value="${esc(c.tel2)}" autocomplete="off"></div>
       </div>
-      ${nuevo?`<h3>Dirección de envío</h3>${camposDir({})}`:""}
+      <h3>Dirección real <span class="hint" style="font-family:var(--f-body);font-weight:500;font-size:13px">(donde vive)</span></h3>
+      ${camposReal(c.domicilio||{})}
+      ${nuevo?`<div class="sec-h" style="margin:6px 0 0"><h3>Dirección de envío</h3><button class="btn sm" type="button" id="c-copiar">Usar la misma dirección real</button></div>
+      <p class="hint" style="margin-top:-8px">Si la dejas vacía, se usará la dirección real. Si envías por agencia, elige <b>Agencia</b> y escribe la sede.</p>
+      ${camposDir({})}`:""}
       <div class="field"><label for="c-notas">Notas (opcional)</label><textarea id="c-notas" placeholder="Ej. prefiere que la llamen antes de enviar">${esc(c.notas)}</textarea></div>
       <p class="err" id="c-err"></p>
       <div class="actions">
@@ -967,8 +1060,8 @@ function modalCliente(c){
   if(leer) leer.addEventListener("click",()=>{
     const r=leerMensaje(ov.querySelector("#c-msg").value);
     set("#c-nom",r.nombres); set("#c-ape",r.apellidos); set("#c-dni",r.dni); set("#c-tel1",r.tel1); set("#c-tel2",r.tel2);
-    set("#d-dist",r.distrito); set("#d-prov",r.provincia); set("#d-dir",r.direccion); set("#d-ref",r.referencia);
-    if(r.departamento){ const dp=DEPAS.find(x=>norm(x)===norm(r.departamento)); if(dp) set("#d-depa",dp); }
+    set("#r-dist",r.distrito); set("#r-prov",r.provincia); set("#r-dir",r.direccion); set("#r-ref",r.referencia);
+    if(r.departamento){ const dp=DEPAS.find(x=>norm(x)===norm(r.departamento)); if(dp) set("#r-depa",dp); }
     if(r.agencia){
       const ag=AGENCIAS.find(x=>norm(r.agencia).includes(norm(x.split(" ")[0])));
       ov.querySelector('input[name="d-tipo"][value="agencia"]').checked=true; ov.querySelector("#d-agbox").hidden=false;
@@ -976,6 +1069,14 @@ function modalCliente(c){
       set("#d-sede", ag ? r.agencia.replace(new RegExp(ag.split(" ")[0],"i"),"").replace(/^[\s\-–,:]+/,"") : r.agencia);
     }
     ov.querySelector("details").open=false; toast("Datos cargados. Revisa antes de guardar.");
+  });
+  const cop=ov.querySelector("#c-copiar");
+  if(cop) cop.addEventListener("click",()=>{
+    const r=leerReal(ov);
+    ov.querySelector('input[name="d-tipo"][value="domicilio"]').checked=true; ov.querySelector("#d-agbox").hidden=true;
+    ov.querySelector("#d-depa").value=r.departamento; ov.querySelector("#d-prov").value=r.provincia; ov.querySelector("#d-dist").value=r.distrito;
+    ov.querySelector("#d-dir").value=r.direccion; ov.querySelector("#d-ref").value=r.referencia;
+    toast("Dirección real copiada al envío");
   });
   const del=ov.querySelector("#c-del");
   if(del) del.addEventListener("click",()=>{
@@ -989,7 +1090,7 @@ function modalCliente(c){
   ov.querySelector("#f-cli").addEventListener("submit", async e=>{
     e.preventDefault();
     const v=s=>((ov.querySelector(s)||{}).value||"").trim(), err=ov.querySelector("#c-err"); err.textContent="";
-    const datos={ nombres:v("#c-nom"), apellidos:v("#c-ape"), dni:v("#c-dni").replace(/\s/g,""), tel1:v("#c-tel1").replace(/[^\d+]/g,""), tel2:v("#c-tel2").replace(/[^\d+]/g,""), notas:v("#c-notas") };
+    const datos={ nombres:v("#c-nom"), apellidos:v("#c-ape"), dni:v("#c-dni").replace(/\s/g,""), tel1:v("#c-tel1").replace(/[^\d+]/g,""), tel2:v("#c-tel2").replace(/[^\d+]/g,""), notas:v("#c-notas"), domicilio:leerReal(ov) };
     if(!datos.nombres){ err.textContent="Escribe los nombres."; return; }
     if(!datos.dni){ err.textContent="Escribe el DNI: la agencia lo pide para entregar el paquete."; return; }
     if(!/^[0-9A-Za-z]{8,12}$/.test(datos.dni)){ err.textContent="El DNI debe tener 8 dígitos (o de 9 a 12 si es carnet de extranjería)."; return; }
@@ -1002,7 +1103,8 @@ function modalCliente(c){
     const ok=ov.querySelector("#c-ok"); ok.disabled=true;
     try{
       if(nuevo){
-        const d=leerDir(ov);
+        let d=leerDir(ov);
+        if(dirVacia(d) && !realVacia(datos.domicilio)) d={ ...datos.domicilio, id:rid(), tipo:"domicilio" };
         const { data, error } = await S.sb.from("clientes").insert({ ...datos, negocio_id:S.neg.id, direcciones: dirVacia(d)?[]:[d] }).select().single();
         if(error) throw error;
         S.clientes.unshift(prep({ ...data, compras:[] }));
@@ -1076,14 +1178,29 @@ function modalNegocio(a, volver){
         <div class="field"><label for="a-u">Cliente frecuente desde</label><select id="a-u">${[2,3,4,5,6,8,10].map(n=>`<option value="${n}" ${+a.umbral===n?"selected":""}>${n} compras</option>`).join("")}</select></div>
         ${sup?`<div class="field"><label for="a-en">Enlace (solo letras, números y guiones)</label><input id="a-en" type="text" class="mono" value="${esc(a.enlace||"")}"></div>`:""}
       </div>
+      <div class="grid2">
+        <div class="field"><span>Tipos de prenda que vende</span><div class="tags" id="a-prendas"></div>
+          <div class="tag-add"><input id="a-pn" type="text" maxlength="30" placeholder="Ej. CHOMPAS"><button class="btn sm" type="button" id="a-pa">Agregar</button></div></div>
+        <div class="field"><span>Tallas</span><div class="tags" id="a-tallas"></div>
+          <div class="tag-add"><input id="a-tn" type="text" maxlength="10" placeholder="Ej. XXL"><button class="btn sm" type="button" id="a-ta">Agregar</button></div></div>
+      </div>
       <div class="field"><span>Enlace de ingreso de esta tienda</span>
         <div class="link-box"><code id="a-link">${esc(enlaceTienda(a))}</code><button class="btn sm" type="button" id="a-copy">Copiar</button></div></div>
       <p class="err" id="a-err"></p>
       <div class="actions"><button class="btn" type="button" id="a-cancel">Cancelar</button><button class="btn primary" type="submit" id="a-ok">Guardar</button></div>
     </form>`);
   const q=s=>ov.querySelector(s);
+  const cat={ prendas:[...(Array.isArray(a.prendas)&&a.prendas.length?a.prendas:DEF_PRENDAS)], tallas:[...(Array.isArray(a.tallas)&&a.tallas.length?a.tallas:DEF_TALLAS)] };
+  const pintarTags=()=>{ ["prendas","tallas"].forEach(k=>{ q("#a-"+k).innerHTML = cat[k].map((x,i)=>`<span class="tag">${esc(x)}<button type="button" data-k="${k}" data-i="${i}" aria-label="Quitar ${esc(x)}">×</button></span>`).join(""); }); };
+  const agregarTag=(k,inp)=>{ const v=q(inp).value.trim().toUpperCase().replace(/\s+/g," "); if(!v) return; if(!cat[k].includes(v)) cat[k].push(v); q(inp).value=""; pintarTags(); };
   const pintarLogo=()=>{ q("#a-prev").innerHTML = logo ? `<img src="${logo}" alt="Logo">` : "Sin logo"; q("#a-quitar").hidden=!logo; };
-  pintarLogo();
+  pintarLogo(); pintarTags();
+  ov.addEventListener("click", e=>{ const b=e.target.closest(".tag button"); if(!b) return; const k=b.dataset.k;
+    if(cat[k].length<=1){ q("#a-err").textContent="Debe quedar al menos un tipo de prenda y una talla."; return; } cat[k].splice(+b.dataset.i,1); pintarTags(); });
+  q("#a-pa").addEventListener("click", ()=>agregarTag("prendas","#a-pn"));
+  q("#a-ta").addEventListener("click", ()=>agregarTag("tallas","#a-tn"));
+  q("#a-pn").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); agregarTag("prendas","#a-pn"); } });
+  q("#a-tn").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); agregarTag("tallas","#a-tn"); } });
   const salirModal=()=>{ cerrarModal(); if(volver) modalUsuarios(); };
   q("#a-cancel").addEventListener("click", salirModal);
   q("#a-file").addEventListener("change", async e=>{
@@ -1099,7 +1216,7 @@ function modalNegocio(a, volver){
     e.preventDefault();
     const v=s=>q(s).value.trim(), err=q("#a-err"); err.textContent="";
     if(!v("#a-t")){ err.textContent="Escribe el nombre de la tienda."; return; }
-    const cambios={ nombre:v("#a-t"), telefono:v("#a-tel"), direccion:v("#a-dir"), frase:v("#a-fr"), umbral:+v("#a-u"), logo };
+    const cambios={ nombre:v("#a-t"), telefono:v("#a-tel"), direccion:v("#a-dir"), frase:v("#a-fr"), umbral:+v("#a-u"), logo, prendas:cat.prendas, tallas:cat.tallas };
     if(en){ const ev=en.value.trim().toLowerCase(); if(!/^[a-z0-9-]{2,40}$/.test(ev)){ err.textContent="El enlace solo puede tener letras sin tildes, números y guiones (2 a 40)."; return; } cambios.enlace=ev; }
     const ok=q("#a-ok"); ok.disabled=true;
     const { data, error } = await S.sb.from("negocios").update(cambios).eq("id", a.id).select().single();
@@ -1107,11 +1224,11 @@ function modalNegocio(a, volver){
       ok.disabled=false;
       err.textContent = error.code==="23505" ? "Ese enlace ya lo usa otra tienda. Elige otro."
         : error.code==="23514" ? "El logo es muy pesado o el enlace no es válido."
-        : error.code==="42703" ? "Falta ejecutar en Supabase el archivo 2-logos-y-frases.sql."
+        : (error.code==="42703"||error.code==="PGRST204") ? "Falta ejecutar en Supabase el archivo 4-direcciones-prendas-inventario.sql."
         : errMsg(error);
       return;
     }
-    if(S.neg && data.id===S.neg.id){ S.neg=data; mostrarApp(); render(); }
+    if(S.neg && data.id===S.neg.id){ S.neg=data; mostrarApp(); render(); if(S.sel) renderDetail(true); }
     toast("Datos de la tienda guardados ✓"); salirModal();
   });
 }
@@ -1342,6 +1459,86 @@ function modalEtiqueta(c){
   });
 }
 
+/* =========== Inventario =========== */
+function modalInventario(){
+  if(!S.neg) return;
+  const st={ vista:"disp", per:"todo", del:null, err:"" };
+  const ov=abrirModal(`<h2>Inventario</h2><div id="inv"></div>`, true);
+  const box=ov.querySelector("#inv");
+  const desde=()=> st.per==="hoy" ? hoy() : st.per==="mes" ? hoy().slice(0,8)+"01" : "";
+  const pintar=()=>{
+    if(S.sinInventario){ box.innerHTML=`<p class="err">Falta ejecutar en Supabase el archivo 4-direcciones-prendas-inventario.sql.</p>`; return; }
+    const mAll=movimientos(""), mPer=movimientos(desde());
+    const ps=new Set(), ts=new Set();
+    [mAll.ing, mAll.ven].forEach(o=>Object.keys(o).forEach(k=>{ const [p,t]=k.split("\u0001"); ps.add(p); ts.add(t); }));
+    const P=unir(PRENDAS_T(), ps), T=unir(TALLAS_T(), ts);
+    let val, cls=null;
+    if(st.vista==="disp"){ val=(p,t)=>(mAll.ing[kk(p,t)]||0)-(mAll.ven[kk(p,t)]||0); cls=v=>v<0?"neg":v===0?"vacio":v<=2?"bajo":"ok"; }
+    else if(st.vista==="ing") val=(p,t)=>mPer.ing[kk(p,t)]||0;
+    else val=(p,t)=>mPer.ven[kk(p,t)]||0;
+    const rec=[...S.ingresos].sort((a,b)=>(b.fecha+b.creado).localeCompare(a.fecha+a.creado)).slice(0,30);
+    box.innerHTML=`
+      <div class="inv-bar">
+        <div class="chips">${[["disp","Disponible"],["ing","Ingresó"],["ven","Vendió"]].map(([k,l])=>`<button class="chip" type="button" data-a="vista" data-v="${k}" aria-pressed="${st.vista===k}">${l}</button>`).join("")}</div>
+        ${st.vista!=="disp"?`<select id="inv-per" aria-label="Periodo" style="width:auto"><option value="todo" ${st.per==="todo"?"selected":""}>Todo</option><option value="mes" ${st.per==="mes"?"selected":""}>Este mes</option><option value="hoy" ${st.per==="hoy"?"selected":""}>Hoy</option></select>`:""}
+      </div>
+      <p class="hint" style="margin:0">${st.vista==="disp"?"Lo que te queda: todo lo que ingresó menos todo lo vendido. <b>Verde</b>: hay stock. <b>Naranja</b>: quedan 1 o 2. <b>Rojo</b>: se vendió más de lo que ingresó (falta registrar un ingreso).":st.vista==="ing"?"Prendas que entraron a tu inventario.":"Prendas vendidas, según las compras registradas de tus clientes."}</p>
+      ${matriz(P,T,val,cls,st.vista==="disp")}
+      <section class="inv-form">
+        <h3>Registrar ingreso de mercadería</h3>
+        <form id="f-ing" novalidate style="display:flex;flex-direction:column;gap:12px">
+          <div class="grid3">
+            <div class="field"><label for="i-fecha">Fecha</label><input id="i-fecha" type="date" value="${hoy()}"></div>
+            <div class="field"><label for="i-prenda">Tipo de prenda</label><select id="i-prenda">${PRENDAS_T().map(p=>`<option>${esc(p)}</option>`).join("")}</select></div>
+            <div class="field"><label for="i-costo">Costo por prenda S/ (opcional)</label><input id="i-costo" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0.00"></div>
+          </div>
+          <div class="field"><span>Cantidad que ingresa por talla</span>
+            <div class="qty-grid">${TALLAS_T().map(t=>`<label class="qty"><span>${esc(t)}</span><input type="number" min="0" inputmode="numeric" data-t="${esc(t)}" placeholder="0"></label>`).join("")}</div></div>
+          <div class="field"><label for="i-nota">Nota (opcional)</label><input id="i-nota" type="text" placeholder="Ej. proveedor Gamarra, lote del lunes"></div>
+          <p class="err" id="i-err">${esc(st.err)}</p>
+          <div class="actions"><button class="btn primary" type="submit" id="i-ok">Registrar ingreso</button></div>
+        </form>
+      </section>
+      <section style="display:flex;flex-direction:column;gap:10px"><h3>Últimos ingresos</h3>
+        ${rec.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fecha</th><th>Tipo</th><th>Talla</th><th>Cantidad</th><th>Nota</th><th></th></tr></thead><tbody>
+          ${rec.map(r=>`<tr><td class="mono">${fFecha(r.fecha)}</td><td>${esc(r.prenda)}</td><td class="mono"><b>${esc(r.talla)}</b></td><td>${r.cantidad}</td><td>${esc(r.nota||"")}</td>
+            <td class="act">${st.del===r.id?`<button class="btn sm danger" type="button" data-a="delSi" data-id="${r.id}">Sí, eliminar</button> <button class="btn sm ghost" type="button" data-a="delNo">No</button>`:`<button class="btn sm ghost" type="button" data-a="del" data-id="${r.id}">Eliminar</button>`}</td></tr>`).join("")}
+        </tbody></table></div>`:`<p class="hint" style="margin:0">Aún no registras ingresos. Usa el formulario de arriba cada vez que llegue mercadería.</p>`}
+      </section>`;
+    st.err="";
+  };
+  box.addEventListener("click", async e=>{
+    const b=e.target.closest("[data-a]"); if(!b) return;
+    const a=b.dataset.a;
+    if(a==="vista"){ st.vista=b.dataset.v; return pintar(); }
+    if(a==="del"){ st.del=b.dataset.id; return pintar(); }
+    if(a==="delNo"){ st.del=null; return pintar(); }
+    if(a==="delSi"){
+      b.disabled=true;
+      const { error } = await S.sb.from("ingresos").delete().eq("id", b.dataset.id);
+      if(error) st.err=errMsg(error); else { S.ingresos=S.ingresos.filter(x=>x.id!==b.dataset.id); toast("Ingreso eliminado"); renderDetail(); }
+      st.del=null; return pintar();
+    }
+  });
+  box.addEventListener("change", e=>{ if(e.target.id==="inv-per"){ st.per=e.target.value; pintar(); } });
+  box.addEventListener("submit", async e=>{
+    e.preventDefault();
+    const f=e.target, err=f.querySelector("#i-err"); err.textContent="";
+    const prenda=f.querySelector("#i-prenda").value, fecha=f.querySelector("#i-fecha").value||hoy();
+    const costo=Math.max(0,parseFloat(f.querySelector("#i-costo").value)||0), nota=f.querySelector("#i-nota").value.trim();
+    const filas=[...f.querySelectorAll(".qty input")].map(i=>({ talla:i.dataset.t, cantidad:parseInt(i.value)||0 })).filter(x=>x.cantidad>0)
+      .map(x=>({ negocio_id:S.neg.id, fecha, prenda, talla:x.talla, cantidad:x.cantidad, costo, nota }));
+    if(!filas.length){ err.textContent="Escribe la cantidad que ingresa en al menos una talla."; return; }
+    const btn=f.querySelector("#i-ok"); btn.disabled=true;
+    const { data, error } = await S.sb.from("ingresos").insert(filas).select();
+    if(error){ err.textContent=errMsg(error); btn.disabled=false; return; }
+    S.ingresos.push(...data);
+    toast(`Ingreso registrado ✓ ${filas.reduce((a,x)=>a+x.cantidad,0)} ${prenda}`);
+    st.vista="disp"; pintar(); renderDetail(true);
+  });
+  pintar();
+}
+
 /* =========== Excel =========== */
 $("#b-excel").addEventListener("click", async()=>{
   if(!S.clientes.length){ toast("Aún no hay clientes para exportar."); return; }
@@ -1350,8 +1547,8 @@ $("#b-excel").addEventListener("click", async()=>{
     await loadScript(XLSXJS);
     const filas=S.clientes.map(c=>{ const d=(c.direcciones||[])[0]||{}; const cs=c.compras||[]; const ult=cs.map(x=>x.fecha).sort().pop()||"";
       return { "Nombres":c.nombres, "Apellidos":c.apellidos, "DNI":c.dni, "Celular":c.tel1, "Otro celular":c.tel2||"",
-        "Departamento":d.departamento||"", "Provincia":d.provincia||"", "Distrito":d.distrito||"", "Dirección":d.direccion||"", "Referencia":d.referencia||"",
-        "Envío":(d.direccion||d.sede)?lugar(d):"", "Nº compras":cs.length, "Prendas":prendasC(c), "Total S/":+totalC(c).toFixed(2),
+        "Dirección real":(c.domicilio||{}).direccion||"", "Distrito (real)":(c.domicilio||{}).distrito||"", "Provincia (real)":(c.domicilio||{}).provincia||"", "Departamento (real)":(c.domicilio||{}).departamento||"",
+        "Envío: tipo":(d.direccion||d.sede)?lugar(d):"", "Envío: dirección":d.direccion||"", "Envío: distrito":d.distrito||"", "Envío: provincia":d.provincia||"", "Envío: departamento":d.departamento||"", "Envío: referencia":d.referencia||"", "Nº compras":cs.length, "Prendas":prendasC(c), "Total S/":+totalC(c).toFixed(2),
         "Categoría":TIPO_TXT[tipo(c)], "Última compra":fFecha(ult), "Cliente desde":fFecha(diaLocal(c.creado)), "Notas":c.notas||"" }; });
     const compras=[];
     S.clientes.forEach(c=>(c.compras||[]).forEach(x=>(x.items||[]).forEach(i=>compras.push({ _f:x.fecha,
@@ -1363,6 +1560,13 @@ $("#b-excel").addEventListener("click", async()=>{
     const s1=XLSX.utils.json_to_sheet(filas); s1["!cols"]=Object.keys(filas[0]).map(k=>({wch:Math.max(11,k.length+3)}));
     const s2=XLSX.utils.json_to_sheet(compras.length?compras:[{"Fecha":"","Cliente":"Sin compras registradas"}]); s2["!cols"]=Array(14).fill({wch:15});
     XLSX.utils.book_append_sheet(wb,s1,"Clientes"); XLSX.utils.book_append_sheet(wb,s2,"Compras");
+    if(S.ingresos.length){
+      const m=movimientos(""), ks=new Set([...Object.keys(m.ing),...Object.keys(m.ven)]);
+      const P=unir(PRENDAS_T(), new Set([...ks].map(k=>k.split("\u0001")[0]))), T=unir(TALLAS_T(), new Set([...ks].map(k=>k.split("\u0001")[1])));
+      const inv=[]; P.forEach(p=>T.forEach(t=>{ const i=m.ing[kk(p,t)]||0, v=m.ven[kk(p,t)]||0; if(i||v) inv.push({ "Tipo de prenda":p, "Talla":t, "Ingresó":i, "Vendió":v, "Disponible":i-v }); }));
+      const s3=XLSX.utils.json_to_sheet(inv); s3["!cols"]=[{wch:20},{wch:8},{wch:10},{wch:10},{wch:11}];
+      XLSX.utils.book_append_sheet(wb,s3,"Inventario");
+    }
     XLSX.writeFile(wb, `Clientes y compras ${hoy()}.xlsx`);
     toast("Excel descargado ✓");
   }catch(er){ toast(er&&er.message==="load"?"No se pudo cargar el generador de Excel. Revisa tu internet.":"No se pudo crear el Excel."); }
@@ -1370,6 +1574,7 @@ $("#b-excel").addEventListener("click", async()=>{
 });
 
 $("#b-nuevo").addEventListener("click", ()=>modalCliente(null));
+$("#b-inv").addEventListener("click", modalInventario);
 $("#b-ajustes").addEventListener("click", ()=>{ if(S.neg) modalNegocio(S.neg); });
 $("#b-cuenta").addEventListener("click", modalCuenta);
 $("#b-salir").addEventListener("click", ()=>salir("Cerraste sesión correctamente."));
