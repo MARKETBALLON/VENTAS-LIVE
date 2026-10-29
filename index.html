@@ -388,6 +388,48 @@ input[type=search]{-webkit-appearance:none}
 .top .brand>div{min-width:0}
 .top .brand h1,.top .brand .who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .field .seg{align-self:flex-start}
+
+/* ---- Botón cerrar en ventanas ---- */
+.modal{position:relative}
+.modal>h2,.modal form>h2:first-child{padding-right:44px}
+.modal-x{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;line-height:1;display:grid;place-items:center;z-index:2}
+.modal-x:hover{color:var(--fg);border-color:var(--accent);background:var(--sunk)}
+
+/* ---- Hojas de envío ---- */
+.cnt{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:11px;font-weight:800;padding:1px 7px;margin-left:2px}
+#hj{display:flex;flex-direction:column;gap:14px}
+.hj-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:50vh;overflow-y:auto}
+.hj-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer}
+.hj-row:first-child{border-top:0}
+.hj-row:hover{background:var(--sunk)}
+.hj-row input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+.hj-row:has(input:checked){background:var(--accent-soft)}
+.hj-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hj-main small{color:var(--muted)}
+.hj-end{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:13px;color:var(--muted)}
+.hj-opts{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.inv-acc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ---- Impresión de inventario y varias hojas ---- */
+.print-doc{font-family:Arial,Helvetica,sans-serif;color:#111}
+.pd-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:12px}
+.pd-head img{width:44px;height:44px;object-fit:contain}
+.pd-head div{display:flex;flex-direction:column;flex:1}
+.pd-head b{font-size:18px}
+.pd-head span{font-size:13px}
+.pd-fecha{font-weight:700}
+.pd-foot{font-size:10px;color:#555;margin-top:10px}
+@media print{
+  #print-area .sheet{break-after:page;page-break-after:always}
+  #print-area .sheet:last-child{break-after:auto;page-break-after:auto}
+  .print-doc .tbl-wrap{border:0;overflow:visible}
+  .print-doc .mtx{font-size:12px;color:#111}
+  .print-doc .mtx th,.print-doc .mtx td{border:1px solid #111;padding:5px 6px;color:#111;background:#fff}
+  .print-doc .mtx thead th,.print-doc .mtx tfoot th,.print-doc .mtx tfoot td{background:#e9e9e9;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.top{gap:8px}
+@media (max-width:1400px){ .u-txt small{display:none} }
+.top .brand{flex-basis:150px}
 </style>
 </head>
 <body>
@@ -423,7 +465,7 @@ input[type=search]{-webkit-appearance:none}
       <div><h1 id="h-neg">MarketLive 🛍️</h1><small class="who" id="h-who"></small></div>
     </div>
     <button class="btn icon-btn" id="b-refresh" type="button" title="Actualizar datos" aria-label="Actualizar datos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
-    <button class="btn" id="b-excel" type="button" title="Descargar toda la base en Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span class="tx">Excel</span></button>
+    <button class="btn" id="b-hojas" type="button" title="Imprimir hojas de envío de los pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg><span class="tx">Hojas de envío</span><span class="cnt" id="b-hojas-n" hidden></span></button>
     <button class="btn" id="b-inv" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span class="tx">Inventario</span></button>
     <button class="btn" id="b-usuarios" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg><span class="tx">Usuarios</span></button>
     <button class="btn" id="b-ajustes" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg><span class="tx">Mi tienda</span></button>
@@ -706,7 +748,9 @@ function renderStats(){
   const cs=S.clientes, h=hoy(), r=S.ready;
   $("#s-cli").textContent = r ? cs.length : "–";
   $("#s-frec").textContent = r ? cs.filter(c=>tipo(c)==="frecuente").length : "–";
-  $("#s-pend").textContent = r ? cs.reduce((a,c)=>a+pendientes(c),0) : "–";
+  const np = cs.reduce((a,c)=>a+pendientes(c),0);
+  $("#s-pend").textContent = r ? np : "–";
+  $("#b-hojas-n").hidden = !r || !np; $("#b-hojas-n").textContent = np;
   let pr=0, tot=0;
   cs.forEach(c=>(c.compras||[]).forEach(x=>{ if(x.fecha===h){ tot+=Number(x.total)||0; (x.items||[]).forEach(i=>pr+=Number(i.cant)||0); } }));
   $("#s-hoy").textContent = r ? `${pr} prenda${pr===1?"":"s"} · ${money(tot)}` : "–";
@@ -961,11 +1005,11 @@ $("#b-refresh").addEventListener("click", async ()=>{ await cargar(); toast("Dat
 
 /* =========== Ventanas =========== */
 function abrirModal(html, wide){
-  $("#modal-root").innerHTML = `<div class="overlay" id="ov"><div class="modal ${wide?"wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#modal-root").innerHTML = `<div class="overlay" id="ov"><div class="modal ${wide?"wide":""}" role="dialog" aria-modal="true"><button class="modal-x" type="button" data-close aria-label="Cerrar" title="Cerrar">✕</button>${html}</div></div>`;
   const ov=$("#ov");
   ov.addEventListener("mousedown", e=>{ if(e.target===ov) cerrarModal(); });
   ov.addEventListener("click", e=>{ if(e.target.closest("[data-close]")) cerrarModal(); });
-  setTimeout(()=>{ const f=ov.querySelector("input:not([type=radio]):not([type=checkbox]),select,textarea"); if(f) f.focus(); },30);
+  setTimeout(()=>{ const f=ov.querySelector("input:not([type=radio]):not([type=checkbox]):not([type=file]),select,textarea"); if(f && !f.closest(".no-focus")) f.focus(); },30);
   return ov;
 }
 function cerrarModal(){ $("#modal-root").innerHTML=""; }
@@ -1480,7 +1524,11 @@ function modalInventario(){
     box.innerHTML=`
       <div class="inv-bar">
         <div class="chips">${[["disp","Disponible"],["ing","Ingresó"],["ven","Vendió"]].map(([k,l])=>`<button class="chip" type="button" data-a="vista" data-v="${k}" aria-pressed="${st.vista===k}">${l}</button>`).join("")}</div>
+        <div class="inv-acc">
         ${st.vista!=="disp"?`<select id="inv-per" aria-label="Periodo" style="width:auto"><option value="todo" ${st.per==="todo"?"selected":""}>Todo</option><option value="mes" ${st.per==="mes"?"selected":""}>Este mes</option><option value="hoy" ${st.per==="hoy"?"selected":""}>Hoy</option></select>`:""}
+          <button class="btn sm" type="button" data-a="imprimir">Imprimir</button>
+          <button class="btn sm" type="button" data-a="excel">Exportar a Excel</button>
+        </div>
       </div>
       <p class="hint" style="margin:0">${st.vista==="disp"?"Lo que te queda: todo lo que ingresó menos todo lo vendido. <b>Verde</b>: hay stock. <b>Naranja</b>: quedan 1 o 2. <b>Rojo</b>: se vendió más de lo que ingresó (falta registrar un ingreso).":st.vista==="ing"?"Prendas que entraron a tu inventario.":"Prendas vendidas, según las compras registradas de tus clientes."}</p>
       ${matriz(P,T,val,cls,st.vista==="disp")}
@@ -1499,6 +1547,7 @@ function modalInventario(){
           <div class="actions"><button class="btn primary" type="submit" id="i-ok">Registrar ingreso</button></div>
         </form>
       </section>
+      <p class="hint" style="margin:0">¿Necesitas también tus clientes y compras en Excel? <button class="btn sm ghost" type="button" data-a="excelTodo">Exportar clientes y compras</button></p>
       <section style="display:flex;flex-direction:column;gap:10px"><h3>Últimos ingresos</h3>
         ${rec.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fecha</th><th>Tipo</th><th>Talla</th><th>Cantidad</th><th>Nota</th><th></th></tr></thead><tbody>
           ${rec.map(r=>`<tr><td class="mono">${fFecha(r.fecha)}</td><td>${esc(r.prenda)}</td><td class="mono"><b>${esc(r.talla)}</b></td><td>${r.cantidad}</td><td>${esc(r.nota||"")}</td>
@@ -1511,6 +1560,19 @@ function modalInventario(){
     const b=e.target.closest("[data-a]"); if(!b) return;
     const a=b.dataset.a;
     if(a==="vista"){ st.vista=b.dataset.v; return pintar(); }
+    if(a==="excel") return exportarInventario(b);
+    if(a==="excelTodo") return exportarTodo(b);
+    if(a==="imprimir"){
+      const { m } = datosInv(), mp=movimientos(desde()); const ps=new Set(), ts=new Set();
+      [m.ing, m.ven].forEach(o=>Object.keys(o).forEach(k=>{ const [p,t]=k.split("\u0001"); ps.add(p); ts.add(t); }));
+      const P=unir(PRENDAS_T(), ps), T=unir(TALLAS_T(), ts);
+      const val = st.vista==="disp" ? (p,t)=>(m.ing[kk(p,t)]||0)-(m.ven[kk(p,t)]||0) : st.vista==="ing" ? (p,t)=>mp.ing[kk(p,t)]||0 : (p,t)=>mp.ven[kk(p,t)]||0;
+      const titulo = {disp:"Inventario disponible", ing:"Mercadería que ingresó", ven:"Prendas vendidas"}[st.vista] + (st.vista==="disp"?"":` · ${{todo:"Todo",mes:"Este mes",hoy:"Hoy"}[st.per]}`);
+      const N=S.neg||{};
+      imprimir(`<div class="print-doc"><div class="pd-head">${logoOk(N.logo)?`<img src="${N.logo}" alt="">`:""}<div><b>${esc(N.nombre||"")}</b><span>${esc(titulo)}</span></div><span class="pd-fecha">${fFecha(hoy())}</span></div>
+        ${matriz(P,T,val,null,st.vista==="disp")}<p class="pd-foot">Impreso desde MarketLive</p></div>`, T.length>8);
+      return;
+    }
     if(a==="del"){ st.del=b.dataset.id; return pintar(); }
     if(a==="delNo"){ st.del=null; return pintar(); }
     if(a==="delSi"){
@@ -1540,9 +1602,9 @@ function modalInventario(){
 }
 
 /* =========== Excel =========== */
-$("#b-excel").addEventListener("click", async()=>{
+async function exportarTodo(b){
   if(!S.clientes.length){ toast("Aún no hay clientes para exportar."); return; }
-  const b=$("#b-excel"); b.disabled=true;
+  b.disabled=true;
   try{
     await loadScript(XLSXJS);
     const filas=S.clientes.map(c=>{ const d=(c.direcciones||[])[0]||{}; const cs=c.compras||[]; const ult=cs.map(x=>x.fecha).sort().pop()||"";
@@ -1571,10 +1633,110 @@ $("#b-excel").addEventListener("click", async()=>{
     toast("Excel descargado ✓");
   }catch(er){ toast(er&&er.message==="load"?"No se pudo cargar el generador de Excel. Revisa tu internet.":"No se pudo crear el Excel."); }
   b.disabled=false;
-});
+}
+function datosInv(){
+  const m=movimientos(""), ps=new Set(), ts=new Set();
+  [m.ing, m.ven].forEach(o=>Object.keys(o).forEach(k=>{ const [p,t]=k.split("\u0001"); ps.add(p); ts.add(t); }));
+  return { m, P:unir(PRENDAS_T(), ps), T:unir(TALLAS_T(), ts) };
+}
+async function exportarInventario(b){
+  b.disabled=true;
+  try{
+    await loadScript(XLSXJS);
+    const { m, P, T } = datosInv();
+    const disp=(p,t)=>(m.ing[kk(p,t)]||0)-(m.ven[kk(p,t)]||0);
+    const filas=P.map(p=>{ const r={ "Tipo de prenda":p }; let tot=0; T.forEach(t=>{ const v=disp(p,t); r[t]=v; tot+=v; }); r["Total"]=tot; return r; });
+    const totRow={ "Tipo de prenda":"TOTAL" }; let g=0; T.forEach(t=>{ const v=P.reduce((a,p)=>a+disp(p,t),0); totRow[t]=v; g+=v; }); totRow["Total"]=g; filas.push(totRow);
+    const det=[]; P.forEach(p=>T.forEach(t=>{ const i=m.ing[kk(p,t)]||0, v=m.ven[kk(p,t)]||0; if(i||v) det.push({ "Tipo de prenda":p, "Talla":t, "Ingresó":i, "Vendió":v, "Disponible":i-v }); }));
+    const ings=[...S.ingresos].sort((a,b)=>(b.fecha+b.creado).localeCompare(a.fecha+a.creado)).map(r=>({ "Fecha":fFecha(r.fecha), "Tipo de prenda":r.prenda, "Talla":r.talla, "Cantidad":+r.cantidad, "Costo S/":+r.costo||0, "Nota":r.nota||"" }));
+    const wb=XLSX.utils.book_new();
+    const s1=XLSX.utils.json_to_sheet(filas); s1["!cols"]=[{wch:20},...T.map(()=>({wch:7})),{wch:8}];
+    XLSX.utils.book_append_sheet(wb,s1,"Disponible");
+    const s2=XLSX.utils.json_to_sheet(det.length?det:[{"Tipo de prenda":"Sin movimientos"}]); s2["!cols"]=[{wch:20},{wch:8},{wch:10},{wch:10},{wch:11}];
+    XLSX.utils.book_append_sheet(wb,s2,"Detalle por talla");
+    const s3=XLSX.utils.json_to_sheet(ings.length?ings:[{"Fecha":"","Tipo de prenda":"Sin ingresos registrados"}]); s3["!cols"]=[{wch:11},{wch:20},{wch:8},{wch:10},{wch:10},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,s3,"Ingresos");
+    XLSX.writeFile(wb, `Inventario ${(S.neg&&S.neg.nombre)||""} ${hoy()}.xlsx`.replace(/[\\/:*?"<>|]/g,""));
+    toast("Inventario descargado en Excel ✓");
+  }catch(er){ toast(er&&er.message==="load"?"No se pudo cargar el generador de Excel. Revisa tu internet.":"No se pudo crear el Excel."); }
+  b.disabled=false;
+}
+function imprimir(html, horizontal){
+  $("#print-area").innerHTML = html;
+  $("#page-style").textContent = `@page{size:A4 ${horizontal?"landscape":"portrait"};margin:10mm}`;
+  window.print();
+}
+
+/* =========== Hojas de envío (varias etiquetas a la vez) =========== */
+function etiquetaDe(c, x, cont, land){
+  const dirs=c.direcciones||[], d=dirs.find(z=>z.id===x.dir_id)||dirs[0];
+  if(!d) return null;
+  return { nombre:nombre(c), dni:c.dni, tels:[fTel(c.tel1), c.tel2?fTel(c.tel2):""].filter(Boolean), dir:d.direccion||"", ubic:ubic(d), ref:d.referencia||"",
+    lugar:lugar(d), recibe:d.recibeNombre?`${d.recibeNombre}${d.recibeDni?" · DNI "+d.recibeDni:""}`:"",
+    cont: cont ? (x.items||[]).map(i=>`${i.cant} ${i.prenda} (${i.talla})`).join(", ") : "", rem:true, land, fecha:fFecha(hoy()) };
+}
+function modalHojas(){
+  const st={ filtro:"pend", sel:new Set(), err:"" };
+  const ov=abrirModal(`<h2>Hojas de envío</h2><div id="hj" class="no-focus"></div>`, true);
+  const box=ov.querySelector("#hj");
+  const lista=()=>{ const out=[]; S.clientes.forEach(c=>(c.compras||[]).forEach(x=>{
+      if(st.filtro==="pend" ? x.estado!=="enviado" : x.fecha===hoy()) out.push({ c, x, ok:!!(c.direcciones||[]).length }); }));
+    return out.sort((a,b)=>(b.x.fecha+b.x.creado).localeCompare(a.x.fecha+a.x.creado)); };
+  const pintar=()=>{
+    const L=lista(); [...st.sel].forEach(id=>{ if(!L.some(r=>r.x.id===id&&r.ok)) st.sel.delete(id); });
+    const n=st.sel.size, imprimibles=L.filter(r=>r.ok).length;
+    box.innerHTML=`
+      <div class="inv-bar">
+        <div class="chips">
+          <button class="chip" type="button" data-a="f" data-v="pend" aria-pressed="${st.filtro==="pend"}">Por enviar</button>
+          <button class="chip" type="button" data-a="f" data-v="hoy" aria-pressed="${st.filtro==="hoy"}">Pedidos de hoy</button>
+        </div>
+        ${imprimibles?`<button class="btn sm" type="button" data-a="todas">${n===imprimibles?"Quitar selección":"Seleccionar todas"}</button>`:""}
+      </div>
+      <p class="hint" style="margin:0">Marca los pedidos y pulsa <b>Imprimir</b>: sale una hoja A4 por pedido, lista para pegar en la caja.</p>
+      ${L.length?`<div class="hj-list">${L.map(({c,x,ok})=>{ const d=(c.direcciones||[]).find(z=>z.id===x.dir_id)||(c.direcciones||[])[0];
+        return `<label class="hj-row ${ok?"":"off"}"><input type="checkbox" data-id="${x.id}" ${st.sel.has(x.id)?"checked":""} ${ok?"":"disabled"}>
+          <span class="hj-main"><b>${esc(nombre(c))}</b><small>${ok?`${esc(lugar(d))} · ${esc(d.distrito||d.direccion||"")}`:"Sin dirección de envío: agrégala en su ficha"}</small>
+          <span class="h-items">${(x.items||[]).map(i=>`<span class="it">${esc(i.prenda)} · <b>${esc(i.talla)}</b>${i.cant>1?` ×${i.cant}`:""}</span>`).join("")}</span></span>
+          <span class="hj-end"><span class="mono">${fFecha(x.fecha)}</span><span class="estado ${x.estado==="enviado"?"env":"por"}">${x.estado==="enviado"?"✓ Enviado":"Por enviar"}</span></span></label>`; }).join("")}</div>`
+        :`<div class="empty" style="padding:24px"><h3>${st.filtro==="pend"?"No hay pedidos por enviar":"Hoy no hay pedidos"}</h3><p>Cuando registres compras aparecerán aquí.</p></div>`}
+      <div class="hj-opts">
+        <div class="checks">
+          <label><input type="checkbox" id="hj-cont" checked> Incluir el contenido del pedido</label>
+          <label><input type="checkbox" id="hj-env"> Marcar como <b>enviados</b> al imprimir</label>
+        </div>
+        <div class="field"><label for="hj-or">Orientación</label><select id="hj-or" style="width:auto"><option value="portrait">Vertical</option><option value="landscape">Horizontal</option></select></div>
+      </div>
+      <p class="err">${esc(st.err)}</p>
+      <div class="actions"><button class="btn" type="button" data-close>Cerrar</button><button class="btn primary" type="button" data-a="print" ${n?"":"disabled"}>Imprimir ${n} hoja${n===1?"":"s"}</button></div>`;
+    st.err="";
+  };
+  box.addEventListener("change", e=>{ const id=e.target.dataset && e.target.dataset.id; if(!id) return; if(e.target.checked) st.sel.add(id); else st.sel.delete(id); pintar(); });
+  box.addEventListener("click", async e=>{
+    const b=e.target.closest("[data-a]"); if(!b) return;
+    const a=b.dataset.a;
+    if(a==="f"){ st.filtro=b.dataset.v; st.sel.clear(); return pintar(); }
+    if(a==="todas"){ const L=lista().filter(r=>r.ok); if(st.sel.size===L.length) st.sel.clear(); else L.forEach(r=>st.sel.add(r.x.id)); return pintar(); }
+    if(a==="print"){
+      const cont=box.querySelector("#hj-cont").checked, land=box.querySelector("#hj-or").value==="landscape", marcar=box.querySelector("#hj-env").checked;
+      const filas=lista().filter(r=>st.sel.has(r.x.id));
+      const hojas=filas.map(({c,x})=>etiquetaDe(c,x,cont,land)).filter(Boolean);
+      imprimir(hojas.map(o=>`<div class="sheet ${land?"land":""}">${hojaHTML(o)}</div>`).join(""), land);
+      if(marcar){
+        const ids=filas.map(r=>r.x.id);
+        const { data, error } = await S.sb.from("compras").update({ estado:"enviado" }).in("id", ids).select();
+        if(error) st.err=errMsg(error);
+        else { (data||[]).forEach(d=>{ filas.forEach(r=>{ if(r.x.id===d.id) Object.assign(r.x,d); }); }); st.sel.clear(); render(); toast(`${ids.length} pedido${ids.length===1?"":"s"} marcado${ids.length===1?"":"s"} como enviado${ids.length===1?"":"s"} ✓`); }
+      }
+      return pintar();
+    }
+  });
+  pintar();
+}
 
 $("#b-nuevo").addEventListener("click", ()=>modalCliente(null));
 $("#b-inv").addEventListener("click", modalInventario);
+$("#b-hojas").addEventListener("click", modalHojas);
 $("#b-ajustes").addEventListener("click", ()=>{ if(S.neg) modalNegocio(S.neg); });
 $("#b-cuenta").addEventListener("click", modalCuenta);
 $("#b-salir").addEventListener("click", ()=>salir("Cerraste sesión correctamente."));
